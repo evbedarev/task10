@@ -8,16 +8,3 @@ public class AnnotationFinderApp {
         findAnnotation.findFile();
     }
 }
-
-
-//        for (Class clazz: parameterTypes) {
-//            if (clazz.getSimpleName().equals("String")) {
-//                fields.add(" ");
-//            }
-//            if (clazz.getSimpleName().equals("int")) {
-//                fields.add(1);
-//            }
-//        }
-
-//        Object[] objFields = fields.toArray();
-//        Object newObject = constructor.newInstance(objFields);

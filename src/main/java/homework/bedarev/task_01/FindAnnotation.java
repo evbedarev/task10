@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 public class FindAnnotation {
     private String rootPath;
-    public Print print;
+    private Print print;
 
     public FindAnnotation(String rootPath, Print print) {
         this.rootPath = rootPath;
@@ -56,11 +56,11 @@ public class FindAnnotation {
     }
 
     private void findField(Class clazz) {
-        iterateFields(clazz.getFields(), print);
-        iterateFields(clazz.getDeclaredFields(), print);
+        iterateFields(clazz.getFields());
+        iterateFields(clazz.getDeclaredFields());
     }
 
-    private void iterateFields(Field[] fields, Print print) {
+    private void iterateFields(Field[] fields) {
         for (Field field: fields) {
             field.setAccessible(true);
             findAnnotationsField(field);

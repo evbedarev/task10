@@ -1,11 +1,7 @@
 
 import homework.bedarev.task_01.FindAnnotation;
 import homework.bedarev.task_01.Print;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 
@@ -30,5 +26,4 @@ public class AnnotationFinderAppTest {
         verify(print,times(1)).printMsg("Name of method with ExperimentalFeature :fuelWithWater");
         verify(print,times(1)).printMsg("Name of Field with ExperimentalFeature :codename");
     }
-
 }

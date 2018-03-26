@@ -29,15 +29,15 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
         return  getterFrom;
     }
 
-    public Map<String, Class> findSetter(Class classTo, Object to) throws Exception{
-        Map<String, Class> setterTo = new HashMap<>();
+    public Map<String, Class[]> findSetter(Class classTo, Object to) throws Exception{
+        Map<String, Class[]> setterTo = new HashMap<>();
         Method[] methods = classTo.getMethods();
 
         for (Method method: methods) {
             if (method.getName().startsWith("set")) {
                 String nameMethodTo = method.getName().substring(3);
-                Type typeSetter = getMethodParameter(method);
-                setterTo.put(nameMethodTo, typeSetter.getClass());
+                Class[] typeSetter = method.getParameterTypes();
+                setterTo.put(nameMethodTo, typeSetter);
             }
         }
         return setterTo;

@@ -1,3 +1,4 @@
+package homework.bedarev.task_01;
 
 import homework.bedarev.task_01.FindAnnotation;
 import homework.bedarev.task_01.Print;

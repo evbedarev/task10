@@ -7,7 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReflectionFieldCopier implements BeanFieldCopier {
-    Print print = new Print();
+    PrintInTask2 printInTask2;
+
+    public ReflectionFieldCopier(PrintInTask2 printInTask2) {
+        this.printInTask2 = printInTask2;
+    }
 
     @Override
     public void copy(Object from, Object to) {
@@ -25,6 +29,7 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
                             .forEach(e -> {
                                 setValue(e.getValue(),e.getKey(),entry.getKey(), to);
                             });
+                    printInTask2.printMsg("Found getter get" + entry.getKey());
                 }
             }
         } catch (Exception exception) {
@@ -44,13 +49,13 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
                 getterFrom.put(nameMethodFrom, valueAndTypeFrom);
             }
         }
-        print.printMsg("Found " + getterFrom.size() + " getters");
+        printInTask2.printMsg("Found " + getterFrom.size() + " getters:");
         return  getterFrom;
     }
 
     private void setValue (Object valueToSet,Class<?> typeParam, String nameMethod, Object to) {
         try {
-            Map<String, Class[]> setterMap = findSetter(to.getClass(), to);
+            Map<String, Class[]> setterMap = findSetters(to.getClass(), to);
             setterMap.entrySet()
                     .removeIf( e -> !e.getKey().equals(nameMethod));
 
@@ -68,7 +73,7 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
         }
     }
 
-    public Map<String, Class[]> findSetter(Class classTo, Object to) throws Exception{
+    public Map<String, Class[]> findSetters(Class classTo, Object to) throws Exception{
         Map<String, Class[]> setterTo = new HashMap<>();
         Method[] methods = classTo.getMethods();
 
@@ -77,6 +82,7 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
                 String nameMethodTo = method.getName().substring(3);
                 Class[] typeSetter = method.getParameterTypes();
                 setterTo.put(nameMethodTo, typeSetter);
+                printInTask2.printMsg("Find setter " + method.getName());
             }
         }
         return setterTo;

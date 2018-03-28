@@ -55,7 +55,7 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
 
     private void setValue (Object valueToSet,Class<?> typeParam, String nameMethod, Object to) {
         try {
-            Map<String, Class[]> setterMap = findSetters(to.getClass(), to);
+            Map<String, Class[]> setterMap = findSetters(to.getClass());
             setterMap.entrySet()
                     .removeIf( e -> !e.getKey().equals(nameMethod));
 
@@ -73,7 +73,7 @@ public class ReflectionFieldCopier implements BeanFieldCopier {
         }
     }
 
-    public Map<String, Class[]> findSetters(Class classTo, Object to) throws Exception{
+    public Map<String, Class[]> findSetters(Class classTo) {
         Map<String, Class[]> setterTo = new HashMap<>();
         Method[] methods = classTo.getMethods();
 

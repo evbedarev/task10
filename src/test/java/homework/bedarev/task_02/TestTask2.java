@@ -87,7 +87,7 @@ public class TestTask2 {
     public void findSetter() throws Exception {
         ReflectionFieldCopier reflectionFieldCopier = new ReflectionFieldCopier(printInTask2);
         Map<String, Class[]> setterMap;
-        setterMap = reflectionFieldCopier.findSetters(classOne.getClass(), classOne);
+        setterMap = reflectionFieldCopier.findSetters(classOne.getClass());
         assertTrue(setterMap
                         .keySet().contains("Name"));
     }

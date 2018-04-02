@@ -22,6 +22,7 @@ public class TestTask3 {
             System.out.println("Calling method testMethod");
             return someString;
         }
+
     }
 
     @Test

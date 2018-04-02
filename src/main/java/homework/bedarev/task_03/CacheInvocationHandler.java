@@ -2,10 +2,7 @@ package homework.bedarev.task_03;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CacheInvocationHandler implements InvocationHandler {
@@ -67,16 +64,18 @@ public class CacheInvocationHandler implements InvocationHandler {
     }
 
     private CachedResult isEqualMethod(Method method, Object[] args,  List<CachedResult> localCachedResult) {
-        CachedResult result = null;
-        for (CachedResult cachedResult: localCachedResult) {
-            if (isEqualClasses(cachedResult.getTypeArgs(), method.getParameterTypes())) {
-                result = cachedResult;
-            }
+        Map<Object, Class> argFromCache = new HashMap<>();
+        Map<Object, Class> argFromMethod = new HashMap<>();
+        Class[] typeArgsFromMethod = method.getParameterTypes();
+
+        for (int i=0; i < args.length; i++) {
+            Class clazzFromCache = localCachedResult.get(0).getTypeArgs()[i];
+            if ( (typeArgsFromMethod[i].cast(args[i]) == ()))
         }
-        return result;
+
     }
 
-    private boolean isEqualClasses (Class[] fromCache, Class[] fromMethod) {
+    private boolean isEqualArgs (Object[] fromCache, Object[] fromMethod, Class[] argsFromCache) {
         List<Class> listFromCache = Arrays.asList(fromCache);
         List<Class> listFromMethod = Arrays.asList(fromMethod);
         for (Class clazz: listFromMethod) {

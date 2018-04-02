@@ -19,7 +19,7 @@ public class TestTask3 {
         @Cache(cacheType = "FILE", fileNamePrefix = "data", zip = true, identityBy = {String.class, double.class})
         @Override
         public String testMethod(String someString) {
-
+            System.out.println("Calling method testMethod");
             return someString;
         }
     }
@@ -27,15 +27,13 @@ public class TestTask3 {
     @Test
     public void testCacheProxy() {
         TestClass testClass = new TestClass(printTask3);
-        CacheProxy cacheProxy = new CacheProxy(printTask3);
+        CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
         ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
-//        System.out.println(testClassProxy.testMethod("Im Test Method"));
         verify(printTask3,times(1)).printMessage("testMethod");
-//        testClassProxy.testMethod("qwe");
-//        verify(test).testMethod("qwe");
-//        cacheProxy.readAnnotations(testClass);
-        verify(printTask3).printMessage("@homework.bedarev.task_03.Cache(zip=true, maxCountList=0, " +
-                "fileNamePrefix=data, cacheType=FILE, identityBy=[class java.lang.String, double])");
+        verify(printTask3).printMessage("Find value of fileNamePrefix: data");
+        testClassProxy.testMethod("qweqwe");
+        verify(printTask3).printMessage("Save method name testMethod");
+        testClassProxy.testMethod("qweqwe");
+        verify(printTask3).printMessage("Return method from cache testMethod");
     }
-
 }

@@ -1,46 +1,60 @@
 package homework.bedarev.task_03;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
+import java.io.File;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 public class CacheProxy {
     PrintTask3 printTask3;
+    String rootFolderPath;
 
-    public CacheProxy(PrintTask3 printTask3) {
+    public CacheProxy(PrintTask3 printTask3, String rootFolderPath) {
         this.printTask3 = printTask3;
+        this.rootFolderPath = rootFolderPath;
     }
 
     public Object cache(Object service) {
-        Object objectProxy = Proxy.newProxyInstance(service.getClass().getClassLoader(),
-                service.getClass().getInterfaces(),
-                new SomeInvocationHandler(service));
+        File rootDir = new File(rootFolderPath);
 
-        Arrays.stream(objectProxy
-                .getClass()
-                .getMethods())
-                .forEach(e -> printTask3.printMessage(e.getName()));
+        if (!rootDir.exists()) {
+            printTask3.printMessage("Please verify root directory. No such directory...");
+        }
 
-        readAnnotations(service);
+        InvocationHandler handler = new CacheInvocationHandler(service,
+                readAnnotations(service),
+                printTask3);
 
-        return objectProxy;
+        if (rootDir.exists()) {
+            Object objectProxy = Proxy.newProxyInstance(service.getClass().getClassLoader(),
+                    service.getClass().getInterfaces(),
+                    handler);
+
+            Arrays.stream(objectProxy
+                    .getClass()
+                    .getMethods())
+                    .forEach(e -> printTask3.printMessage(e.getName()));
+
+            return objectProxy;
+        }
+        return null; //Bad, refactor
     }
 
-    public void readAnnotations(Object service) {
+    public Map<String, Cache> readAnnotations (Object service) {
+        Map<String, Cache> annotationParameters = new HashMap<>();
         Class classOfService = service.getClass();
         Method[] methods = classOfService.getMethods();
         Arrays.stream(methods)
                 .forEach(e -> {
-                    Annotation[] annotations = e.getAnnotations();
-                    Arrays.stream(annotations)
-                            .forEach(a -> {
-                                printTask3.printMessage(a.toString());
-                                System.out.println("Found annotations: " + a.toString());
-                            });
+                    if (e.isAnnotationPresent(Cache.class)) {
+                        Cache annotation = e.getAnnotation(Cache.class);
+                        printTask3.printMessage("Find value of fileNamePrefix: " + annotation.fileNamePrefix());
+                        annotationParameters.put(e.getName(), annotation);
+                    }
                 });
+        return annotationParameters;
     }
 }

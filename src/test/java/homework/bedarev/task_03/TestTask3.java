@@ -6,7 +6,7 @@ public class TestTask3 {
     PrintTask3 printTask3 = mock(PrintTask3.class);
 
     interface ITest {
-        public String testMethod(String someString);
+        public String testMethod(String someString, Integer someNum);
     }
 
     class TestClass implements ITest {
@@ -18,7 +18,7 @@ public class TestTask3 {
 
         @Cache(cacheType = "FILE", fileNamePrefix = "data", zip = true, identityBy = {String.class, double.class})
         @Override
-        public String testMethod(String someString) {
+        public String testMethod(String someString, Integer someNum) {
             System.out.println("Calling method testMethod");
             return someString;
         }
@@ -32,9 +32,9 @@ public class TestTask3 {
         ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
         verify(printTask3,times(1)).printMessage("testMethod");
         verify(printTask3).printMessage("Find value of fileNamePrefix: data");
-        testClassProxy.testMethod("qweqwe");
+        testClassProxy.testMethod("qweqwe", 25);
         verify(printTask3).printMessage("Save method name testMethod");
-        testClassProxy.testMethod("qweqwe");
+        testClassProxy.testMethod("qweqwe", 25);
         verify(printTask3).printMessage("Return method from cache testMethod");
     }
 }

@@ -1,5 +1,6 @@
 package homework.bedarev.task_03;
 
+import java.io.ObjectInput;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -36,15 +37,14 @@ public class CacheInvocationHandler implements InvocationHandler {
                                                     Object[] args) throws Throwable {
 
         List<CachedResult> localCachedResult = new ArrayList<>();
-        CachedResult cachedResult;
+        CachedResult cachedResult = null;
+
         if (cachedResults != null) {
             localCachedResult = cachedResults.stream()
                     .filter( e -> e.getCachedObject().getName().equals(method.getName()))
                     .collect(Collectors.toList());
+            cachedResult = isEqualMethod(method, args, localCachedResult);
         }
-
-        cachedResult = isEqualMethod(method, args, localCachedResult);
-
 
         if (cachedResult != null) {
             printTask3.printMessage("Return method from cache " + method.getName());
@@ -64,18 +64,32 @@ public class CacheInvocationHandler implements InvocationHandler {
     }
 
     private CachedResult isEqualMethod(Method method, Object[] args,  List<CachedResult> localCachedResult) {
-        Map<Object, Class> argFromCache = new HashMap<>();
-        Map<Object, Class> argFromMethod = new HashMap<>();
-        Class[] typeArgsFromMethod = method.getParameterTypes();
+        CachedResult methodFromCache = null;
 
-        for (int i=0; i < args.length; i++) {
-            Class clazzFromCache = localCachedResult.get(0).getTypeArgs()[i];
-            if ( (typeArgsFromMethod[i].cast(args[i]) == ()))
+        for (CachedResult cachedResult: localCachedResult) {
+            if (isEqualArgsTypes(cachedResult.getTypeArgs(), method.getParameterTypes())) {
+                methodFromCache = cachedResult;
+                break;
+            }
         }
 
+        if (methodFromCache == null) {
+            return null;
+        }
+
+        for (int i = 0; i < args.length; i++) {
+            Class clazz = method.getParameterTypes()[i];
+            System.out.println(clazz.toString());
+            Object argFromCache = methodFromCache.getArgs()[i];
+            if (!clazz.cast(args[i]).equals(clazz.cast(argFromCache))) {
+                System.out.println("Exit from cicle");
+                return null;
+            }
+        }
+        return  methodFromCache;
     }
 
-    private boolean isEqualArgs (Object[] fromCache, Object[] fromMethod, Class[] argsFromCache) {
+    private boolean isEqualArgsTypes(Class[] fromCache, Class[] fromMethod) {
         List<Class> listFromCache = Arrays.asList(fromCache);
         List<Class> listFromMethod = Arrays.asList(fromMethod);
         for (Class clazz: listFromMethod) {
@@ -85,6 +99,4 @@ public class CacheInvocationHandler implements InvocationHandler {
         }
         return true;
     }
-
-
 }

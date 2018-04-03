@@ -1,9 +1,10 @@
 package homework.bedarev.task_03;
 
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Method;
+import java.util.List;
 
-public class CachedResult implements Serializable {
+public class CachedResult implements Externalizable {
     private Method cachedObject;
     private Class<?> returnType;
     private Object returnValue;
@@ -18,20 +19,7 @@ public class CachedResult implements Serializable {
         this.typeArgs = typeArgs;
     }
 
-    public void setCachedObject(Method cachedObject) {
-        this.cachedObject = cachedObject;
-    }
-
-    public void setArgs(Object[] args) {
-        this.args = args;
-    }
-
-    public void setTypeArgs(Class[] typeArgs) {
-        this.typeArgs = typeArgs;
-    }
-
     public Object[] getArgs() {
-
         return args;
     }
 
@@ -39,13 +27,6 @@ public class CachedResult implements Serializable {
         return typeArgs;
     }
 
-    public void setReturnType(Class<?> returnType) {
-        this.returnType = returnType;
-    }
-
-    public void setReturnValue(Object returnValue) {
-        this.returnValue = returnValue;
-    }
 
     public Method getCachedObject() {
         return cachedObject;
@@ -58,4 +39,23 @@ public class CachedResult implements Serializable {
     public Object getReturnValue() {
         return returnValue;
     }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(cachedObject);
+        out.writeObject(returnType);
+        out.writeObject(returnValue);
+        out.writeObject(args);
+        out.writeObject(typeArgs);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        cachedObject = (Method) in.readObject();
+        returnType = (Class<?>) in.readObject();
+        returnValue = in.readObject();
+        args = (Object[]) in.readObject();
+        typeArgs = (Class[]) in.readObject();
+    }
+
 }

@@ -1,5 +1,6 @@
 package homework.bedarev.task_03;
 
+import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -10,31 +11,46 @@ public class CacheInvocationHandler implements InvocationHandler {
     private Map<String, Cache> annotationParameters;
     private PrintTask3 printTask3;
     private String addToCache;
+    private String rootDirectory;
+    private String filePathSerialize;
+
     List<CachedResult> cachedResults = new ArrayList<>();
     CheckEqualsMethods equalsMethods = new CheckEqualsMethods();
 
     public CacheInvocationHandler(Object f1,
                                   Map<String, Cache> annotationParameters,
-                                  PrintTask3 printTask3){
+                                  PrintTask3 printTask3,
+                                  String rootDirectory){
         obj = f1;
         this.annotationParameters = annotationParameters;
         this.printTask3 = printTask3;
+        this.rootDirectory = rootDirectory;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         boolean containsKey = annotationParameters.containsKey(method.getName());
-        String cacheType = annotationParameters.get(method.getName()).cacheType();
+        Cache cacheParam = annotationParameters.get(method.getName());
+        String cacheType = cacheParam.cacheType();
+        String fileNamePrefix = cacheParam.fileNamePrefix();
 
-        if ((containsKey) && (cacheType.equals("MEMORY"))) {
+        System.out.println(cacheType);
+
+        if (fileNamePrefix.equals("")) {
+            fileNamePrefix = method.getName();
+        }
+
+        if (cacheType.equals("MEMORY")) {
             addToCache = "MEMORY";
             return invokeMethodWithAnnotationMemory(method, args, cachedResults);
         }
 
-        if ((containsKey) && (cacheType.equals("FILE"))) {
+        if (cacheType.equals("FILE")) {
             addToCache = "FILE";
-            System.out.println("File");
+            filePathSerialize = filePathSerialize + fileNamePrefix + ".dat";
+            return invokeMethodWithAnnotationMemory(method, args, cachedResults);
         }
+
         return method.invoke(obj, args);
     }
 
@@ -75,12 +91,8 @@ public class CacheInvocationHandler implements InvocationHandler {
 
         if (addToCache.equals("FILE")) {
             SerializeAndFind serialize = new SerializeAndFind();
-            serialize.serializeResult("./",cachedResult);
+            System.out.println("Serialize to file: " + filePathSerialize);
+            serialize.serializeResult(filePathSerialize,cachedResult);
         }
-    }
-
-    private Object invokeMethodWithAnnotationFile (Method method, Object[] args, String path) {
-        List<CachedResult> cachedResults = new ArrayList<>();
-        return cachedResults;
     }
 }

@@ -30,10 +30,8 @@ public class CheckEqualsMethods {
 
         for (int i = 0; i < args.length; i++) {
             Class clazz = method.getParameterTypes()[i];
-            System.out.println(clazz.toString());
             Object argFromCache = methodFromCache.getArgs()[i];
             if (!clazz.cast(args[i]).equals(clazz.cast(argFromCache))) {
-                System.out.println("Exit from cicle");
                 return false;
             }
         }

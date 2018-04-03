@@ -7,6 +7,7 @@ public class TestTask3 {
 
     interface ITest {
         public String testMethod(String someString, Integer someNum);
+        public String testMethodSerialize(String someString, Integer someNum);
     }
 
     class TestClass implements ITest {
@@ -23,6 +24,13 @@ public class TestTask3 {
             return someString;
         }
 
+        @Cache(cacheType = "FILE", fileNamePrefix = "data", zip = false, identityBy = {String.class, double.class})
+        @Override
+        public String testMethodSerialize(String someString, Integer someNum) {
+            System.out.println("Calling method testMethod");
+            return someString;
+        }
+
     }
 
     @Test
@@ -31,12 +39,15 @@ public class TestTask3 {
         CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
         ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
         verify(printTask3,times(1)).printMessage("testMethod");
-        verify(printTask3).printMessage("Find value of fileNamePrefix: data");
+        verify(printTask3,times(2)).printMessage("Find value of fileNamePrefix: data");
         testClassProxy.testMethod("qweqwe", 25);
         verify(printTask3).printMessage("Save method name testMethod");
         testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3,times(2)).printMessage("Save method name testMethod");
         testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3).printMessage("Return method from cache testMethod");
+        testClassProxy.testMethodSerialize("qweqwe",55);
     }
+
+
 }

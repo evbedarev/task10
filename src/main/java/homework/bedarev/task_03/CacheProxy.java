@@ -26,7 +26,7 @@ public class CacheProxy {
 
         InvocationHandler handler = new CacheInvocationHandler(service,
                 readAnnotations(service),
-                printTask3);
+                printTask3, rootFolderPath);
 
         if (rootDir.exists()) {
             Object objectProxy = Proxy.newProxyInstance(service.getClass().getClassLoader(),

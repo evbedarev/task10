@@ -16,7 +16,8 @@ public class SerializeAndFind {
 
     public boolean serializeResult (String filePath, CachedResult cachedResult) {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            out.writeObject(cachedResult);
+            cachedResult.writeExternal(out);
+            out.close();
             return true;
         } catch (IOException exception) {
             exception.printStackTrace();

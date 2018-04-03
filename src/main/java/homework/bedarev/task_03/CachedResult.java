@@ -1,8 +1,9 @@
 package homework.bedarev.task_03;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
-public class CachedResult {
+public class CachedResult implements Serializable {
     private Method cachedObject;
     private Class<?> returnType;
     private Object returnValue;

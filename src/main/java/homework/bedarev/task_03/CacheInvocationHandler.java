@@ -1,6 +1,5 @@
 package homework.bedarev.task_03;
 
-import java.io.ObjectInput;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -10,7 +9,9 @@ public class CacheInvocationHandler implements InvocationHandler {
     private Object obj;
     private Map<String, Cache> annotationParameters;
     private PrintTask3 printTask3;
+    private String addToCache;
     List<CachedResult> cachedResults = new ArrayList<>();
+    CheckEqualsMethods equalsMethods = new CheckEqualsMethods();
 
     public CacheInvocationHandler(Object f1,
                                   Map<String, Cache> annotationParameters,
@@ -22,28 +23,33 @@ public class CacheInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //verify annotations
-        if (annotationParameters.containsKey(method.getName())) {
-            return invokeMethodWithAnnotationMemory(method, args);
+        boolean containsKey = annotationParameters.containsKey(method.getName());
+        String cacheType = annotationParameters.get(method.getName()).cacheType();
+
+        if ((containsKey) && (cacheType.equals("MEMORY"))) {
+            addToCache = "MEMORY";
+            return invokeMethodWithAnnotationMemory(method, args, cachedResults);
         }
-        //check how cache this method
-        //check is cached result of method
-        //true ? return cached value : cache new result of method
-        System.out.println("I void method and take args, and i cant take args");
+
+        if ((containsKey) && (cacheType.equals("FILE"))) {
+            addToCache = "FILE";
+            System.out.println("File");
+        }
         return method.invoke(obj, args);
     }
 
     private Object invokeMethodWithAnnotationMemory (Method method,
-                                                    Object[] args) throws Throwable {
+                                                     Object[] args,
+                                                     List<CachedResult> cachedResultList) throws Throwable {
 
         List<CachedResult> localCachedResult = new ArrayList<>();
         CachedResult cachedResult = null;
 
-        if (cachedResults != null) {
-            localCachedResult = cachedResults.stream()
+        if (cachedResultList != null) {
+            localCachedResult = cachedResultList.stream()
                     .filter( e -> e.getCachedObject().getName().equals(method.getName()))
                     .collect(Collectors.toList());
-            cachedResult = isEqualMethod(method, args, localCachedResult);
+            cachedResult = equalsMethods.isEqualMethod(method, args, localCachedResult);
         }
 
         if (cachedResult != null) {
@@ -55,48 +61,26 @@ public class CacheInvocationHandler implements InvocationHandler {
             Object result = method.invoke(obj, args);
             Class[] typeArgs = method.getParameterTypes();
             Class returnType = method.getReturnType();
-
-            cachedResults.add(new CachedResult(method, returnType, result, args, typeArgs));
+            addResultToCache(new CachedResult(method, returnType, result, args, typeArgs));
             printTask3.printMessage("Save method name " + method.getName());
             return result;
         }
         return null;
     }
 
-    private CachedResult isEqualMethod(Method method, Object[] args,  List<CachedResult> localCachedResult) {
-        CachedResult methodFromCache = null;
-
-        for (CachedResult cachedResult: localCachedResult) {
-            if (isEqualArgsTypes(cachedResult.getTypeArgs(), method.getParameterTypes())) {
-                methodFromCache = cachedResult;
-                break;
-            }
+    private void addResultToCache (CachedResult cachedResult) {
+        if (addToCache.equals("MEMORY")) {
+            cachedResults.add(cachedResult);
         }
 
-        if (methodFromCache == null) {
-            return null;
+        if (addToCache.equals("FILE")) {
+            SerializeAndFind serialize = new SerializeAndFind();
+            serialize.serializeResult("./",cachedResult);
         }
-
-        for (int i = 0; i < args.length; i++) {
-            Class clazz = method.getParameterTypes()[i];
-            System.out.println(clazz.toString());
-            Object argFromCache = methodFromCache.getArgs()[i];
-            if (!clazz.cast(args[i]).equals(clazz.cast(argFromCache))) {
-                System.out.println("Exit from cicle");
-                return null;
-            }
-        }
-        return  methodFromCache;
     }
 
-    private boolean isEqualArgsTypes(Class[] fromCache, Class[] fromMethod) {
-        List<Class> listFromCache = Arrays.asList(fromCache);
-        List<Class> listFromMethod = Arrays.asList(fromMethod);
-        for (Class clazz: listFromMethod) {
-            if (!listFromCache.contains(clazz)) {
-                return false;
-            }
-        }
-        return true;
+    private Object invokeMethodWithAnnotationFile (Method method, Object[] args, String path) {
+        List<CachedResult> cachedResults = new ArrayList<>();
+        return cachedResults;
     }
 }

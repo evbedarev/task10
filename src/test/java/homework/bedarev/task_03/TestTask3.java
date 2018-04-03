@@ -16,7 +16,7 @@ public class TestTask3 {
             this.printTask3 = printTask3;
         }
 
-        @Cache(cacheType = "FILE", fileNamePrefix = "data", zip = true, identityBy = {String.class, double.class})
+        @Cache(cacheType = "MEMORY", fileNamePrefix = "data", zip = false, identityBy = {String.class, double.class})
         @Override
         public String testMethod(String someString, Integer someNum) {
             System.out.println("Calling method testMethod");
@@ -34,7 +34,9 @@ public class TestTask3 {
         verify(printTask3).printMessage("Find value of fileNamePrefix: data");
         testClassProxy.testMethod("qweqwe", 25);
         verify(printTask3).printMessage("Save method name testMethod");
-        testClassProxy.testMethod("qweqwe", 25);
+        testClassProxy.testMethod("qweqwe", 33);
+        verify(printTask3,times(2)).printMessage("Save method name testMethod");
+        testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3).printMessage("Return method from cache testMethod");
     }
 }

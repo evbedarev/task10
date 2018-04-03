@@ -6,7 +6,8 @@ public class SerializeAndFind {
 
     public CachedResult desirializeFile (String filePath) {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
-            CachedResult cachedResult = (CachedResult) in.readObject();
+            CachedResult cachedResult = new CachedResult();
+            cachedResult.readExternal(in);
             return cachedResult;
         } catch (ClassNotFoundException | IOException exception) {
             exception.printStackTrace();

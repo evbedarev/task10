@@ -5,31 +5,33 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 public class CachedResult implements Externalizable {
-    private Method cachedObject;
+    private String methodName;
     private Class<?> returnType;
     private Object returnValue;
     private Object[] args;
     private Class[] typeArgs;
 
-    public CachedResult(Method cachedObject, Class<?> returnType, Object returnValue, Object[] args, Class[] typeArgs) {
-        this.cachedObject = cachedObject;
+    public CachedResult() {
+    }
+
+    public CachedResult(String methodName, Class<?> returnType, Object returnValue, Object[] args, Class[] typeArgs) {
         this.returnType = returnType;
         this.returnValue = returnValue;
         this.args = args;
         this.typeArgs = typeArgs;
+        this.methodName = methodName;
     }
 
     public Object[] getArgs() {
         return args;
     }
 
-    public Class[] getTypeArgs() {
-        return typeArgs;
+    public String getMethodName() {
+        return methodName;
     }
 
-
-    public Method getCachedObject() {
-        return cachedObject;
+    public Class[] getTypeArgs() {
+        return typeArgs;
     }
 
     public Class<?> getReturnType() {
@@ -42,7 +44,7 @@ public class CachedResult implements Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(cachedObject);
+        out.writeObject(methodName);
         out.writeObject(returnType);
         out.writeObject(returnValue);
         out.writeObject(args);
@@ -51,7 +53,7 @@ public class CachedResult implements Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        cachedObject = (Method) in.readObject();
+        methodName = (String) in.readObject();
         returnType = (Class<?>) in.readObject();
         returnValue = in.readObject();
         args = (Object[]) in.readObject();

@@ -27,14 +27,14 @@ public class TestTask3 {
         @Cache(cacheType = "FILE", fileNamePrefix = "data", zip = false, identityBy = {String.class, double.class})
         @Override
         public String testMethodSerialize(String someString, Integer someNum) {
-            System.out.println("Calling method testMethod");
+            System.out.println("Calling method testMethodSerialize");
             return someString;
         }
 
     }
 
     @Test
-    public void testCacheProxy() {
+    public void testCacheProxyMemory() {
         TestClass testClass = new TestClass(printTask3);
         CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
         ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
@@ -46,8 +46,15 @@ public class TestTask3 {
         verify(printTask3,times(2)).printMessage("Save method name testMethod");
         testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3).printMessage("Return method from cache testMethod");
-        testClassProxy.testMethodSerialize("qweqwe",55);
     }
-
-
+//
+    @Test
+    public void testCacheProxyFile() {
+        TestClass testClass = new TestClass(printTask3);
+        CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
+        ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
+        testClassProxy.testMethodSerialize("qweqwe", 55);
+        testClassProxy.testMethodSerialize("qweqwe", 55);
+        verify(printTask3).printMessage("Return method from cache testMethodSerialize");
+    }
 }

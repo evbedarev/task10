@@ -1,37 +1,52 @@
 package homework.bedarev.task_03;
 
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class CheckEqualsMethods {
+    PrintTask3 printTask3;
 
-    public CachedResult isEqualMethod(Method method, Object[] args, List<CachedResult> localCachedResult) {
-        CachedResult methodFromCache = null;
-        boolean equalsMethods = false;
-
-        for (CachedResult cachedResult: localCachedResult) {
-            if (isEqualArgsTypes(cachedResult.getTypeArgs(), method.getParameterTypes())) {
-                methodFromCache = cachedResult;
-                equalsMethods = isEqualArgsValues(method, methodFromCache, args);
-            }
-
-            if (equalsMethods == true) {
-                return methodFromCache;
-            }
-        }
-        return  null;
+    public CheckEqualsMethods(PrintTask3 printTask3) {
+        this.printTask3 = printTask3;
     }
 
-    private boolean isEqualArgsValues(Method method,
-                                      CachedResult methodFromCache,
-                                      Object[] args) {
+    public CachedResult isEqualMethod(Method method, Object[] args,
+                                      List<CachedResult> localCachedResult,
+                                      Class[] identityBy) throws NoSuchElementException {
 
-        for (int i = 0; i < args.length; i++) {
-            Class clazz = method.getParameterTypes()[i];
-            Object argFromCache = methodFromCache.getArgs()[i];
-            if (!clazz.cast(args[i]).equals(clazz.cast(argFromCache))) {
+        List<StorageValue> valuesFromMethod = convertToList(method.getParameterTypes(), args);
+
+        for (CachedResult cachedResult: localCachedResult) {
+            boolean equalsMethods = false;
+            if (isEqualArgsTypes(cachedResult.getTypeArgs(), method.getParameterTypes())) {
+                List<StorageValue> valuesFromCache = convertToList(cachedResult.getTypeArgs(), cachedResult.getArgs());
+                equalsMethods = isEqualArgsValues(valuesFromMethod, valuesFromCache);
+            }
+
+            if (equalsMethods) {
+                printTask3.printMessage("Return method from cache " + method.getName());
+                return cachedResult;
+            }
+        }
+        throw new NoSuchElementException("Nothing to return in method isEqualMethod");
+    }
+
+    private List<StorageValue> convertToList (Class[] clazz, Object[] args) {
+        List<StorageValue> storageValueList = new ArrayList<>();
+        for (int index=0; index < args.length; index++) {
+            storageValueList.add(new StorageValue(clazz[index],args[index]));
+        }
+        return storageValueList;
+    }
+
+    private boolean isEqualArgsValues(List<StorageValue> valuesFromMethod,
+                                      List<StorageValue> valuesFromCache) {
+
+        for (StorageValue storageValue: valuesFromCache) {
+            if (!valuesFromMethod.contains(storageValue)) {
                 return false;
             }
         }

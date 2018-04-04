@@ -13,10 +13,11 @@ public class CacheInvocationHandler implements InvocationHandler {
     private String addToCache;
     private String rootDirectory;
     private String filePathSerialize;
+    private Class[] identityBy;
     SerializeAndFind serialize = new SerializeAndFind();
-
     List<CachedResult> cachedResults = new ArrayList<>();
-    CheckEqualsMethods equalsMethods = new CheckEqualsMethods();
+    CheckEqualsMethods equalsMethods;
+
 
     public CacheInvocationHandler(Object f1,
                                   Map<String, Cache> annotationParameters,
@@ -27,6 +28,7 @@ public class CacheInvocationHandler implements InvocationHandler {
         this.printTask3 = printTask3;
         this.rootDirectory = rootDirectory;
         this.rootDirectory = rootDirectory;
+        equalsMethods = new CheckEqualsMethods(printTask3);
     }
 
     @Override
@@ -34,6 +36,7 @@ public class CacheInvocationHandler implements InvocationHandler {
         boolean containsKey = annotationParameters.containsKey(method.getName());
         Cache cacheParam = annotationParameters.get(method.getName());
         String cacheType = cacheParam.cacheType();
+        identityBy = cacheParam.identityBy();
         String fileNamePrefix = cacheParam.fileNamePrefix();
 
         if (!containsKey) {
@@ -58,10 +61,8 @@ public class CacheInvocationHandler implements InvocationHandler {
             if (fileSerialize.exists()) {
                 localCachedResult.add(serialize.desirializeFile(filePathSerialize));
             }
-
             return invokeMethodWithAnnotation(method, args, localCachedResult);
         }
-
         return method.invoke(obj, args);
     }
 
@@ -69,31 +70,21 @@ public class CacheInvocationHandler implements InvocationHandler {
                                               Object[] args,
                                               List<CachedResult> cachedResultList) throws Throwable {
 
-        List<CachedResult> localCachedResult = new ArrayList<>();
-        CachedResult cachedResult = null;
-
-        if (cachedResultList != null) {
+        List<CachedResult> localCachedResult;
+        try {
             localCachedResult = cachedResultList.stream()
-                    .filter( e -> e.getMethodName().equals(method.getName()))
+                    .filter(e -> e.getMethodName().equals(method.getName()))
                     .collect(Collectors.toList());
-            cachedResult = equalsMethods.isEqualMethod(method, args, localCachedResult);
-        }
+            return equalsMethods.isEqualMethod(method, args, localCachedResult, identityBy).getReturnValue();
 
-        if (cachedResult != null) {
-            printTask3.printMessage("Return method from cache " + method.getName());
-            return localCachedResult.iterator().next().getReturnValue();
-        }
-
-        if (cachedResult == null) {
+        } catch (NoSuchElementException exception) {
             Object result = method.invoke(obj, args);
             Class[] typeArgs = method.getParameterTypes();
             Class returnType = method.getReturnType();
-
             addResultToCache(new CachedResult(method.getName(), returnType, result, args, typeArgs));
             printTask3.printMessage("Save method name " + method.getName());
             return result;
         }
-        return null;
     }
 
     private void addResultToCache (CachedResult cachedResult) {
@@ -102,7 +93,6 @@ public class CacheInvocationHandler implements InvocationHandler {
         }
 
         if (addToCache.equals("FILE")) {
-            System.out.println(cachedResult);
             serialize.serializeResult(filePathSerialize,cachedResult);
         }
     }

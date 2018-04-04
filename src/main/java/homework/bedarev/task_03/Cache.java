@@ -13,6 +13,6 @@ public @interface Cache {
     String cacheType() default "MEMORY";
     String fileNamePrefix() default "";
     boolean zip() default false;
-    Class[] identityBy();
+    Class[] identityBy() default {};
     int maxCountList() default 0;
 }

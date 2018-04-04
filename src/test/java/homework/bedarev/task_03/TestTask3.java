@@ -1,5 +1,9 @@
 package homework.bedarev.task_03;
+import org.junit.After;
 import org.junit.Test;
+
+import java.io.File;
+
 import static org.mockito.Mockito.*;
 
 public class TestTask3 {
@@ -8,6 +12,12 @@ public class TestTask3 {
     interface ITest {
         public String testMethod(String someString, Integer someNum);
         public String testMethodSerialize(String someString, Integer someNum);
+    }
+
+    @After
+    public void DeleteFileAfterTest() {
+        File file = new File("./data.dat");
+        file.delete();
     }
 
     class TestClass implements ITest {
@@ -47,13 +57,14 @@ public class TestTask3 {
         testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3).printMessage("Return method from cache testMethod");
     }
-//
+
     @Test
     public void testCacheProxyFile() {
         TestClass testClass = new TestClass(printTask3);
         CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
         ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
         testClassProxy.testMethodSerialize("qweqwe", 55);
+        verify(printTask3).printMessage("Save method name testMethodSerialize");
         testClassProxy.testMethodSerialize("qweqwe", 55);
         verify(printTask3).printMessage("Return method from cache testMethodSerialize");
     }

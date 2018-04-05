@@ -1,8 +1,6 @@
 package homework.bedarev.task_03;
 
 import java.io.*;
-import java.lang.reflect.Method;
-import java.util.List;
 
 public class CachedResult implements Externalizable {
     private String methodName;

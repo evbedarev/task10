@@ -20,8 +20,8 @@ public class StorageValue {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof StorageValue) {
-            StorageValue storageValue = StorageValue.class.cast(obj);
-            return storageValue.getClazz().cast(storageValue.getValue()).equals(this.getClazz().cast(this.getValue()));
+            StorageValue compareTo = StorageValue.class.cast(obj);
+            return compareTo.getClazz().cast(compareTo.getValue()).equals(this.getClazz().cast(this.getValue()));
         }
         return false;
     }

@@ -14,9 +14,9 @@ public class CacheInvocationHandler implements InvocationHandler {
     private String rootDirectory;
     private String filePathSerialize;
     private Class[] identityBy;
-    SerializeAndFind serialize = new SerializeAndFind();
-    List<CachedResult> cachedResults = new ArrayList<>();
-    CheckEqualsMethods equalsMethods;
+    private SerializeAndFind serialize = new SerializeAndFind();
+    private List<CachedResult> cachedResults = new ArrayList<>();
+    private CheckEqualsMethods equalsMethods;
 
 
     public CacheInvocationHandler(Object f1,
@@ -38,7 +38,7 @@ public class CacheInvocationHandler implements InvocationHandler {
         String cacheType = cacheParam.cacheType();
         identityBy = cacheParam.identityBy();
         String fileNamePrefix = cacheParam.fileNamePrefix();
-
+        checkArgsForNull(args, method.getName());
         if (!containsKey) {
             return method.invoke(obj, args);
         }
@@ -96,4 +96,14 @@ public class CacheInvocationHandler implements InvocationHandler {
             serialize.serializeResult(filePathSerialize,cachedResult);
         }
     }
+
+    private void checkArgsForNull (Object[] args, String methodName) {
+        Arrays.asList(args)
+                .forEach( e -> {
+                    if (e == null) {
+                        throw new NullPointerException("Find Null in arguments of method " + methodName);
+                    }
+                });
+    }
+
 }

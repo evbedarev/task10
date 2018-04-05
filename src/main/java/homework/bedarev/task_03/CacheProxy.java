@@ -21,7 +21,7 @@ public class CacheProxy {
         File rootDir = new File(rootFolderPath);
 
         if (!rootDir.exists()) {
-            printTask3.printMessage("Please verify root directory. No such directory...");
+            System.out.println("Please verify root directory. No such directory...");
         }
 
         InvocationHandler handler = new CacheInvocationHandler(service,

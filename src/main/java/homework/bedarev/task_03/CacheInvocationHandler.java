@@ -76,9 +76,14 @@ public class CacheInvocationHandler implements InvocationHandler {
                     .filter(e -> e.getMethodName().equals(method.getName()))
                     .collect(Collectors.toList());
             return equalsMethods.isEqualMethod(method, args, localCachedResult, identityBy).getReturnValue();
-
         } catch (NoSuchElementException exception) {
             Object result = method.invoke(obj, args);
+
+            if (result == null) {
+                throw new NullPointerException("Can't cache result, because method " +
+                        method.getName() + " return null");
+            }
+
             Class[] typeArgs = method.getParameterTypes();
             Class returnType = method.getReturnType();
             addResultToCache(new CachedResult(method.getName(), returnType, result, args, typeArgs));

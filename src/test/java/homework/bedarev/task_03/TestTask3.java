@@ -1,25 +1,44 @@
 package homework.bedarev.task_03;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TestTask3 {
-    PrintTask3 printTask3 = mock(PrintTask3.class);
+    private PrintTask3 printTask3 = mock(PrintTask3.class);
+    private TestClass testClass;
+    private ITest testClassProxy;
+    private CacheProxy cacheProxy;
+    private static final String FILE_SERIALIZE = "data";
+    private static final String ROOT_PATH = "./";
+    private static final String FILE_IDENTITY_METHOD = "method";
 
     interface ITest {
         String testMethod(String someString, Integer someNum);
         String testMethodSerialize(String someString, Integer someNum);
         String testMethodIdentityMethod(String someString, Integer someNum);
+        Integer testMethodNullResult(Integer firstInt, Integer secondInt);
+    }
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Before
+    public void createClasses() {
+
+        testClass = new TestClass(printTask3);
+        cacheProxy = new CacheProxy(printTask3, ROOT_PATH);
+        testClassProxy = (ITest) cacheProxy.cache(testClass);
     }
 
     @After
-    public void DeleteFileAfterTest() {
-        File file = new File("./data.dat");
+    public void deleteFileAfterTest() {
+        File file = new File(ROOT_PATH + FILE_SERIALIZE + ".dat");
         file.delete();
-        file = new File("./method.dat");
+        file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
         file.delete();
     }
 
@@ -42,7 +61,7 @@ public class TestTask3 {
         }
 
         @Cache(cacheType = "FILE",
-                fileNamePrefix = "data",
+                fileNamePrefix = FILE_SERIALIZE,
                 zip = false,
                 identityBy = {String.class, Integer.class})
 
@@ -53,7 +72,7 @@ public class TestTask3 {
         }
 
         @Cache(cacheType = "FILE",
-                fileNamePrefix = "method",
+                fileNamePrefix = FILE_IDENTITY_METHOD,
                 zip = false,
                 identityBy = {String.class})
 
@@ -62,56 +81,67 @@ public class TestTask3 {
             System.out.println("Calling method testMethodSerialize");
             return someString;
         }
+
+        @Cache(cacheType = "FILE",
+                fileNamePrefix = "1234",
+                zip = false,
+                identityBy = {Integer.class, Integer.class})
+
+        @Override
+        public Integer testMethodNullResult(Integer firstInt, Integer secondInt) {
+            return null;
+        }
     }
 
     @Test
     public void testCacheProxyMemory() {
-        TestClass testClass = new TestClass(printTask3);
-        CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
-        ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
-        verify(printTask3,times(1)).printMessage("testMethod");
-        verify(printTask3,times(2)).printMessage("Find value of fileNamePrefix: data");
         testClassProxy.testMethod("qweqwe", 25);
-        verify(printTask3).printMessage("Save method name testMethod");
-        //serialize method result
+        testClassProxy.testMethod("qweqwe", 33);
         testClassProxy.testMethod("qweqwe", 33);
         verify(printTask3,times(2)).printMessage("Save method name testMethod");
-        //Return method result from cache
-        testClassProxy.testMethod("qweqwe", 33);
+        verify(printTask3,times(1)).printMessage("testMethod");
+        verify(printTask3,times(2)).printMessage("Find value of fileNamePrefix: data");
         verify(printTask3).printMessage("Return method from cache testMethod");
     }
 
     @Test
     public void testCacheProxySerialize() {
-        TestClass testClass = new TestClass(printTask3);
-        CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
-        ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
         testClassProxy.testMethodSerialize("qweqwe", 55);
         testClassProxy.testMethodSerialize("qweqwe", 55);
         testClassProxy.testMethodSerialize("qweqwe", 44);
-
         verify(printTask3).printMessage("Return method from cache testMethodSerialize");
         verify(printTask3, times(2)).printMessage("Save method name testMethodSerialize");
+        assertTrue(new File(ROOT_PATH + FILE_SERIALIZE + ".dat").exists());
     }
 
     @Test
     public void testSelectorValues () {
-        TestClass testClass = new TestClass(printTask3);
-        CacheProxy cacheProxy = new CacheProxy(printTask3, "./");
-        ITest testClassProxy = (ITest) cacheProxy.cache(testClass);
         testClassProxy.testMethodSerialize("qweqwe", 55);
         testClassProxy.testMethodSerialize("qweqwe", 55);
         verify(printTask3,times(2))
                 .printMessage("One of identity method is Class: class java.lang.String");
         verify(printTask3,times(2))
                 .printMessage("One of identity method is Class: class java.lang.Integer");
+    }
 
-
+    @Test
+    public void testIdentityMethod () {
         testClassProxy.testMethodIdentityMethod("first", 22);
         testClassProxy.testMethodIdentityMethod("first", 55);
         verify(printTask3).printMessage("Return method from cache testMethodIdentityMethod");
         testClassProxy.testMethodIdentityMethod("first", 55);
-//        verify(printTask3,times(2))
-//                .printMessage("One of identity method is Class: class java.lang.String");
+        assertTrue(new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat").exists());
+    }
+
+    @Test
+    public void nullInArgs() {
+        exception.expect(NullPointerException.class);
+        testClassProxy.testMethodIdentityMethod(null, 22);
+    }
+
+    @Test
+    public void nullInResult() {
+        exception.expect(NullPointerException.class);
+        testClassProxy.testMethodNullResult(1, 1);
     }
 }

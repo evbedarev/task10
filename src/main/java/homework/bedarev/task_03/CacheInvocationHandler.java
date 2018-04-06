@@ -1,5 +1,9 @@
 package homework.bedarev.task_03;
 
+import homework.bedarev.task_03.serialize.Serialize;
+import homework.bedarev.task_03.serialize.SerializeToFile;
+import homework.bedarev.task_03.serialize.SerializeToZip;
+
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -14,22 +18,18 @@ public class CacheInvocationHandler implements InvocationHandler {
     private String rootDirectory;
     private String filePathSerialize;
     private Class[] identityBy;
-    private SerializeAndZip serialize = new SerializeAndZip();
     private List<CachedResult> cachedResults = new ArrayList<>();
-    private CheckEqualsMethods equalsMethods;
-    private boolean zip;
+    private Serialize serializeTo;
 
-
-    public CacheInvocationHandler(Object f1,
+    public CacheInvocationHandler(Object obj,
                                   Map<String, Cache> annotationParameters,
                                   PrintTask3 printTask3,
                                   String rootDirectory){
-        obj = f1;
+        this.obj = obj;
         this.annotationParameters = annotationParameters;
         this.printTask3 = printTask3;
         this.rootDirectory = rootDirectory;
         this.rootDirectory = rootDirectory;
-        equalsMethods = new CheckEqualsMethods(printTask3);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class CacheInvocationHandler implements InvocationHandler {
         Cache cacheParam = annotationParameters.get(method.getName());
         String cacheType = cacheParam.cacheType();
         identityBy = cacheParam.identityBy();
-        zip = cacheParam.zip();
+        boolean zip = cacheParam.zip();
         String fileNamePrefix = cacheParam.fileNamePrefix();
         checkArgsForNull(args, method.getName());
         if (!containsKey) {
@@ -55,26 +55,27 @@ public class CacheInvocationHandler implements InvocationHandler {
         }
 
         if (cacheType.equals("FILE") && !zip) {
+            serializeTo = new SerializeToFile();
             addToCache = "FILE";
             filePathSerialize = rootDirectory + fileNamePrefix + ".dat";
             List<CachedResult> localCachedResult = new ArrayList<>();
 
             if (new File(filePathSerialize).exists()) {
-                localCachedResult.add(serialize.desirializeFile(filePathSerialize));
+                localCachedResult.add(serializeTo.desirializeResult(filePathSerialize));
             }
             return invokeMethodWithAnnotation(method, args, localCachedResult);
         }
 
         if (cacheType.equals("FILE") && zip) {
+            serializeTo = new SerializeToZip();
             addToCache = "FILE";
             filePathSerialize = rootDirectory + fileNamePrefix + ".zip";
             List<CachedResult> localCachedResult = new ArrayList<>();
 
             if (new File(filePathSerialize).exists()) {
-                localCachedResult.add(serialize.desirializeFileZip(filePathSerialize));
+                localCachedResult.add(serializeTo.desirializeResult(filePathSerialize));
             }
             return invokeMethodWithAnnotation(method, args, localCachedResult);
-
         }
         return method.invoke(obj, args);
     }
@@ -82,7 +83,7 @@ public class CacheInvocationHandler implements InvocationHandler {
     private Object invokeMethodWithAnnotation(Method method,
                                               Object[] args,
                                               List<CachedResult> cachedResultList) throws Throwable {
-
+        CheckEqualsMethods equalsMethods = new CheckEqualsMethods(printTask3);
         List<CachedResult> localCachedResult;
         try {
             localCachedResult = cachedResultList.stream()
@@ -91,12 +92,10 @@ public class CacheInvocationHandler implements InvocationHandler {
             return equalsMethods.isEqualMethod(method, args, localCachedResult, identityBy).getReturnValue();
         } catch (NoSuchElementException exception) {
             Object result = method.invoke(obj, args);
-
             if (result == null) {
                 throw new NullPointerException("Can't cache result, because method " +
                         method.getName() + " return null");
             }
-
             Class[] typeArgs = method.getParameterTypes();
             Class returnType = method.getReturnType();
             addResultToCache(new CachedResult(method.getName(), returnType, result, args, typeArgs));
@@ -109,13 +108,8 @@ public class CacheInvocationHandler implements InvocationHandler {
         if (addToCache.equals("MEMORY")) {
             cachedResults.add(cachedResult);
         }
-
-        if (addToCache.equals("FILE") && !zip) {
-            serialize.serializeResult(filePathSerialize,cachedResult);
-        }
-
-        if (addToCache.equals("FILE") && zip) {
-            serialize.serializeResultZip(filePathSerialize,cachedResult);
+        if (addToCache.equals("FILE")) {
+            serializeTo.serializeResult(filePathSerialize,cachedResult);
         }
     }
 

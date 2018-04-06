@@ -15,13 +15,15 @@ public class TestTask3 {
     private static final String FILE_SERIALIZE = "data";
     private static final String ROOT_PATH = "./";
     private static final String FILE_IDENTITY_METHOD = "method";
+    private static final String FILE_ZIP = "ziptest";
+
 
     interface ITest {
         String testMethod(String someString, Integer someNum);
         String testMethodSerialize(String someString, Integer someNum);
         String testMethodIdentityMethod(String someString, Integer someNum);
         Integer testMethodNullResult(Integer firstInt, Integer secondInt);
-//        String testMethodZip(String someString, Integer someNum);
+        String testMethodZip(String someString, Integer someNum);
 
     }
 
@@ -36,13 +38,15 @@ public class TestTask3 {
         testClassProxy = (ITest) cacheProxy.cache(testClass);
     }
 
-//    @After
-//    public void deleteFileAfterTest() {
-//        File file = new File(ROOT_PATH + FILE_SERIALIZE + ".dat");
-//        file.delete();
-//        file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
-//        file.delete();
-//    }
+    @After
+    public void deleteFileAfterTest() {
+        File file = new File(ROOT_PATH + FILE_SERIALIZE + ".dat");
+        file.delete();
+        file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
+        file.delete();
+        file = new File (ROOT_PATH + FILE_ZIP + ".zip");
+        file.delete();
+    }
 
     class TestClass implements ITest {
         PrintTask3 printTask3;
@@ -87,22 +91,22 @@ public class TestTask3 {
         @Cache(cacheType = "FILE",
                 fileNamePrefix = "1234",
                 zip = false,
-                identityBy = {Integer.class, Integer.class})
+                identityBy = {Integer.class})
 
         @Override
         public Integer testMethodNullResult(Integer firstInt, Integer secondInt) {
             return null;
         }
 
-//        @Cache(cacheType = "FILE",
-//                fileNamePrefix = "ziptest",
-//                zip = true,
-//                identityBy = {})
-//
-//        @Override
-//        public String testMethodZip(String someString, Integer someNum) {
-//            return someString;
-//        }
+        @Cache(cacheType = "FILE",
+                fileNamePrefix = "ziptest",
+                zip = true,
+                identityBy = {})
+
+        @Override
+        public String testMethodZip(String someString, Integer someNum) {
+            return someString;
+        }
     }
 
     @Test
@@ -130,9 +134,9 @@ public class TestTask3 {
     public void testSelectorValues () {
         testClassProxy.testMethodSerialize("qweqwe", 55);
         testClassProxy.testMethodSerialize("qweqwe", 55);
-        verify(printTask3,times(2))
+        verify(printTask3,times(4))
                 .printMessage("One of identity method is Class: class java.lang.String");
-        verify(printTask3,times(2))
+        verify(printTask3,times(4))
                 .printMessage("One of identity method is Class: class java.lang.Integer");
     }
 
@@ -157,10 +161,10 @@ public class TestTask3 {
         testClassProxy.testMethodNullResult(1, 1);
     }
 
-//    @Test
-//    public void testZip() {
-//        testClassProxy.testMethodZip("zip", 22);
-//        assertTrue(new File("./ziptest.zip").exists());
-//        testClassProxy.testMethodZip("zip", 22);
-//    }
+    @Test
+    public void testZip() {
+        testClassProxy.testMethodZip("zip", 22);
+        assertTrue(new File("./ziptest.zip").exists());
+        testClassProxy.testMethodZip("zip", 22);
+    }
 }

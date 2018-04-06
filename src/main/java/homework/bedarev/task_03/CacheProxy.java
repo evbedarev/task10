@@ -43,7 +43,7 @@ public class CacheProxy {
         return null; //Bad, refactor
     }
 
-    public Map<String, Cache> readAnnotations (Object service) {
+    private Map<String, Cache> readAnnotations (Object service) {
         Map<String, Cache> annotationParameters = new HashMap<>();
         Class classOfService = service.getClass();
         Method[] methods = classOfService.getMethods();

@@ -21,6 +21,8 @@ public class TestTask3 {
         String testMethodSerialize(String someString, Integer someNum);
         String testMethodIdentityMethod(String someString, Integer someNum);
         Integer testMethodNullResult(Integer firstInt, Integer secondInt);
+//        String testMethodZip(String someString, Integer someNum);
+
     }
 
     @Rule
@@ -34,13 +36,13 @@ public class TestTask3 {
         testClassProxy = (ITest) cacheProxy.cache(testClass);
     }
 
-    @After
-    public void deleteFileAfterTest() {
-        File file = new File(ROOT_PATH + FILE_SERIALIZE + ".dat");
-        file.delete();
-        file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
-        file.delete();
-    }
+//    @After
+//    public void deleteFileAfterTest() {
+//        File file = new File(ROOT_PATH + FILE_SERIALIZE + ".dat");
+//        file.delete();
+//        file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
+//        file.delete();
+//    }
 
     class TestClass implements ITest {
         PrintTask3 printTask3;
@@ -91,6 +93,16 @@ public class TestTask3 {
         public Integer testMethodNullResult(Integer firstInt, Integer secondInt) {
             return null;
         }
+
+//        @Cache(cacheType = "FILE",
+//                fileNamePrefix = "ziptest",
+//                zip = true,
+//                identityBy = {})
+//
+//        @Override
+//        public String testMethodZip(String someString, Integer someNum) {
+//            return someString;
+//        }
     }
 
     @Test
@@ -144,4 +156,11 @@ public class TestTask3 {
         exception.expect(NullPointerException.class);
         testClassProxy.testMethodNullResult(1, 1);
     }
+
+//    @Test
+//    public void testZip() {
+//        testClassProxy.testMethodZip("zip", 22);
+//        assertTrue(new File("./ziptest.zip").exists());
+//        testClassProxy.testMethodZip("zip", 22);
+//    }
 }

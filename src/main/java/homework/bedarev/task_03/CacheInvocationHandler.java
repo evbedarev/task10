@@ -14,9 +14,10 @@ public class CacheInvocationHandler implements InvocationHandler {
     private String rootDirectory;
     private String filePathSerialize;
     private Class[] identityBy;
-    private SerializeAndFind serialize = new SerializeAndFind();
+    private SerializeAndZip serialize = new SerializeAndZip();
     private List<CachedResult> cachedResults = new ArrayList<>();
     private CheckEqualsMethods equalsMethods;
+    private boolean zip;
 
 
     public CacheInvocationHandler(Object f1,
@@ -37,6 +38,7 @@ public class CacheInvocationHandler implements InvocationHandler {
         Cache cacheParam = annotationParameters.get(method.getName());
         String cacheType = cacheParam.cacheType();
         identityBy = cacheParam.identityBy();
+        zip = cacheParam.zip();
         String fileNamePrefix = cacheParam.fileNamePrefix();
         checkArgsForNull(args, method.getName());
         if (!containsKey) {
@@ -52,16 +54,27 @@ public class CacheInvocationHandler implements InvocationHandler {
             return invokeMethodWithAnnotation(method, args, cachedResults);
         }
 
-        if (cacheType.equals("FILE")) {
+        if (cacheType.equals("FILE") && !zip) {
             addToCache = "FILE";
             filePathSerialize = rootDirectory + fileNamePrefix + ".dat";
             List<CachedResult> localCachedResult = new ArrayList<>();
-            File fileSerialize = new File(rootDirectory + fileNamePrefix + ".dat");
 
-            if (fileSerialize.exists()) {
+            if (new File(filePathSerialize).exists()) {
                 localCachedResult.add(serialize.desirializeFile(filePathSerialize));
             }
             return invokeMethodWithAnnotation(method, args, localCachedResult);
+        }
+
+        if (cacheType.equals("FILE") && zip) {
+            addToCache = "FILE";
+            filePathSerialize = rootDirectory + fileNamePrefix + ".zip";
+            List<CachedResult> localCachedResult = new ArrayList<>();
+
+            if (new File(filePathSerialize).exists()) {
+                localCachedResult.add(serialize.desirializeFileZip(filePathSerialize));
+            }
+            return invokeMethodWithAnnotation(method, args, localCachedResult);
+
         }
         return method.invoke(obj, args);
     }
@@ -97,8 +110,12 @@ public class CacheInvocationHandler implements InvocationHandler {
             cachedResults.add(cachedResult);
         }
 
-        if (addToCache.equals("FILE")) {
+        if (addToCache.equals("FILE") && !zip) {
             serialize.serializeResult(filePathSerialize,cachedResult);
+        }
+
+        if (addToCache.equals("FILE") && zip) {
+            serialize.serializeResultZip(filePathSerialize,cachedResult);
         }
     }
 

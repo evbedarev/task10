@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 public class CheckEqualsMethods {
     private PrintTask3 printTask3;
 
-   public CheckEqualsMethods(PrintTask3 printTask3) {
+    public CheckEqualsMethods(PrintTask3 printTask3) {
         this.printTask3 = printTask3;
     }
 
@@ -62,7 +62,9 @@ public class CheckEqualsMethods {
         List<StorageValue> resultList = new ArrayList<>();
         for (int i=0; i < clazz.length; i++) {
             int value = i;
-            listValues.stream().filter( e -> e.getClazz().equals(clazz[value]))
+            listValues
+                    .stream()
+                    .filter( e -> e.getClazz().equals(clazz[value]))
                     .forEach(e -> {
                         printTask3.printMessage("One of identity method is Class: " + e.getClazz().toString());
                         resultList.add(e);

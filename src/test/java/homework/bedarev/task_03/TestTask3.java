@@ -3,6 +3,8 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -16,7 +18,7 @@ public class TestTask3 {
     private static final String ROOT_PATH = "./";
     private static final String FILE_IDENTITY_METHOD = "method";
     private static final String FILE_ZIP = "ziptest";
-
+    private static final String FILE_LIST = "listTest";
 
     interface ITest {
         String testMethod(String someString, Integer someNum);
@@ -24,7 +26,7 @@ public class TestTask3 {
         String testMethodIdentityMethod(String someString, Integer someNum);
         Integer testMethodNullResult(Integer firstInt, Integer secondInt);
         String testMethodZip(String someString, Integer someNum);
-
+        List<String> testMethodList(String element);
     }
 
     @Rule
@@ -32,7 +34,6 @@ public class TestTask3 {
 
     @Before
     public void createClasses() {
-
         testClass = new TestClass(printTask3);
         cacheProxy = new CacheProxy(printTask3, ROOT_PATH);
         testClassProxy = (ITest) cacheProxy.cache(testClass);
@@ -45,6 +46,8 @@ public class TestTask3 {
         file = new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat");
         file.delete();
         file = new File (ROOT_PATH + FILE_ZIP + ".zip");
+        file.delete();
+        file = new File (ROOT_PATH + FILE_LIST + ".zip");
         file.delete();
     }
 
@@ -62,7 +65,6 @@ public class TestTask3 {
 
         @Override
         public String testMethod(String someString, Integer someNum) {
-            System.out.println("Calling method testMethod");
             return someString;
         }
 
@@ -73,7 +75,6 @@ public class TestTask3 {
 
         @Override
         public String testMethodSerialize(String someString, Integer someNum) {
-            System.out.println("Calling method testMethodSerialize");
             return someString;
         }
 
@@ -84,7 +85,6 @@ public class TestTask3 {
 
         @Override
         public String testMethodIdentityMethod(String someString, Integer someNum) {
-            System.out.println("Calling method testMethodSerialize");
             return someString;
         }
 
@@ -99,13 +99,28 @@ public class TestTask3 {
         }
 
         @Cache(cacheType = "FILE",
-                fileNamePrefix = "ziptest",
+                fileNamePrefix = FILE_ZIP,
                 zip = true,
                 identityBy = {})
 
         @Override
         public String testMethodZip(String someString, Integer someNum) {
             return someString;
+        }
+
+        @Cache(cacheType = "FILE",
+                fileNamePrefix = FILE_LIST,
+                zip = true,
+                identityBy = {},
+                maxListSize = 10)
+
+        @Override
+        public List<String> testMethodList(String element) {
+            List<String> testList = new ArrayList<>();
+            for (int i=0; i < 100; i++) {
+                testList.add(element + "__" + i);
+            }
+            return testList;
         }
     }
 
@@ -134,9 +149,9 @@ public class TestTask3 {
     public void testSelectorValues () {
         testClassProxy.testMethodSerialize("qweqwe", 55);
         testClassProxy.testMethodSerialize("qweqwe", 55);
-        verify(printTask3,times(4))
+        verify(printTask3,times(2))
                 .printMessage("One of identity method is Class: class java.lang.String");
-        verify(printTask3,times(4))
+        verify(printTask3,times(2))
                 .printMessage("One of identity method is Class: class java.lang.Integer");
     }
 
@@ -145,7 +160,6 @@ public class TestTask3 {
         testClassProxy.testMethodIdentityMethod("first", 22);
         testClassProxy.testMethodIdentityMethod("first", 55);
         verify(printTask3).printMessage("Return method from cache testMethodIdentityMethod");
-        testClassProxy.testMethodIdentityMethod("first", 55);
         assertTrue(new File(ROOT_PATH + FILE_IDENTITY_METHOD + ".dat").exists());
     }
 
@@ -166,5 +180,11 @@ public class TestTask3 {
         testClassProxy.testMethodZip("zip", 22);
         assertTrue(new File("./ziptest.zip").exists());
         testClassProxy.testMethodZip("zip", 22);
+    }
+
+    @Test
+    public void testList() {
+        List<String> testList = testClassProxy.testMethodList("hellow");
+        assertTrue(testList.size() == 10);
     }
 }

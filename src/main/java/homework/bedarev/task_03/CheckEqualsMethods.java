@@ -66,9 +66,6 @@ public class CheckEqualsMethods {
                     .filter( e -> e.getClazz().equals(clazz[value]))
                     .forEach(e -> {
                         printTask3.printMessage("One of identity method is Class: " + e.getClazz().toString());
-                        if (e.getClazz().equals(Integer.class)) {
-                            System.out.println(e.getValue() + " has add class" + e.getClazz());
-                        }
                         resultList.add(e);
                     });
         }
